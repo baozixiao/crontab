@@ -22,10 +22,15 @@ func main() {
 	if err = master.InitConfig("master/main/master.json"); err != nil {
 		goto ERR
 	}
-	// 启动Api HTTP服务
+	// 任务管理器
+	if err = master.InitJobMgr(); err != nil {
+		goto ERR
+	}
+	// 启动Api HTTP服务，API Server会调用任务管理器提供的etcd服务
 	if err = master.InitApiServer(err); err != nil {
 		goto ERR
 	}
+
 	// 不要走标签ERR，正常退出
 	time.Sleep(time.Second * 100)
 	return

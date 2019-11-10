@@ -12,9 +12,11 @@ var (
 
 // master.json配置文件
 type Config struct {
-	ApiPort         int `json:"apiPort"`
-	ApiReadTimeout  int `json:"apiReadTimeout"`
-	ApiWriteTimeout int `json:"apiWriteTimeout"`
+	ApiPort         int      `json:"apiPort"`
+	ApiReadTimeout  int      `json:"apiReadTimeout"`
+	ApiWriteTimeout int      `json:"apiWriteTimeout"`
+	EtcdEndPoints   []string `json:"etcdEndPoints"`
+	EtcdDialTimeout int      `json:"etcdDialTimeout"`
 }
 
 // 加载配置
