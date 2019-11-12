@@ -32,7 +32,7 @@ func main() {
 	}
 
 	// 不要走标签ERR，正常退出
-	time.Sleep(time.Second * 100)
+	time.Sleep(time.Second * 1000)
 	return
 
 ERR:

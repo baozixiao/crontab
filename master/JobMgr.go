@@ -93,6 +93,30 @@ func (jobMgr *JobMgr) ListJob() (jobList []*common.Job, err error) {
 	return
 }
 
+// 杀死任务
+func (jobMgr *JobMgr) KillJob(name string) (err error) {
+	// 核心原理：
+	// 更新 key=/cron/killer/任务名称，所有的workder会监听到变化
+	// 如果worker监听到变化，它正在执行该任务，就将该任务杀死！！！！
+	var (
+		killerKey      string
+		leaseGrantResp *clientv3.LeaseGrantResponse
+		leaseId        clientv3.LeaseID
+	)
+	killerKey = common.JOB_KILLER_DIR + name
+	// 在etcd中进行更新，让worker监听到一次put操作，创建一个租约，让其稍后自动过期
+	// 租约2s过期时间
+	if leaseGrantResp, err = jobMgr.lease.Grant(context.TODO(), 2); err != nil {
+		return
+	}
+	leaseId = leaseGrantResp.ID
+	//put一个kv，让它与租约关联起来，从而实现1秒后自动过期(value为空值)
+	if _, err = jobMgr.kv.Put(context.TODO(), killerKey, "", clientv3.WithLease(leaseId)); err != nil {
+		return
+	}
+	return
+}
+
 var (
 	// 单例
 	G_jobMgr *JobMgr

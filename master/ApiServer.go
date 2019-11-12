@@ -99,7 +99,34 @@ func handleJobList(resp http.ResponseWriter, req *http.Request) {
 		goto ERR
 	}
 	// 正常应答
-	if bytes, err = common.BuildResponse(0, "succrss", jobList); err == nil {
+	if bytes, err = common.BuildResponse(0, "success", jobList); err == nil {
+		resp.Write(bytes)
+	}
+	return
+ERR:
+	fmt.Println(err)
+	if bytes, err = common.BuildResponse(-1, err.Error(), nil); err == nil {
+		resp.Write(bytes)
+	}
+}
+
+// 强制杀死某个任务
+func handleJobKill(resp http.ResponseWriter, req *http.Request) {
+	var (
+		err   error
+		name  string
+		bytes []byte
+	)
+	if err = req.ParseForm(); err != nil {
+		goto ERR
+	}
+	// 要杀死的任务名称
+	name = req.PostForm.Get("name")
+	if err = G_jobMgr.KillJob(name); err != nil {
+		goto ERR
+	}
+	// 正常应答
+	if bytes, err = common.BuildResponse(0, "success", nil); err == nil {
 		resp.Write(bytes)
 	}
 	return
@@ -113,15 +140,24 @@ ERR:
 // 初始化服务
 func InitApiServer(err error) error {
 	var (
-		mux        *http.ServeMux
-		listener   net.Listener
-		httpServer *http.Server
+		mux           *http.ServeMux
+		listener      net.Listener
+		httpServer    *http.Server
+		staticDir     http.Dir     // 静态文件根目录
+		staticHandler http.Handler //静态文件的http回调
 	)
 	// 配置路由
 	mux = http.NewServeMux()
 	mux.HandleFunc("/job/save", handleJobSave) // 处理请求
 	mux.HandleFunc("/job/delete", handleJobDelete)
 	mux.HandleFunc("/job/list", handleJobList)
+	mux.HandleFunc("/job/kill", handleJobKill)
+
+	staticDir = http.Dir(G_config.Webroot) // 静态文件目录  相对地址，相对于当前项目来说的！！！！
+	staticHandler = http.FileServer(staticDir)
+	// http.HandleFunc 该方法接收两个参数，一个是路由匹配的字符串，另外一个是 func(ResponseWriter, *Request) 类型的函数
+	// http.Handle  接收两个参数，一个是路由匹配的字符串，另外一个是 Handler 类型的值
+	mux.Handle("/", http.StripPrefix("/", staticHandler)) // 静态文件匹配下来，请求 /index.html，去掉前缀/
 
 	// 启动TCP监听
 	if listener, err = net.Listen("tcp", ":"+strconv.Itoa(G_config.ApiPort)); err != nil { // 本机任意ip的端口都可以
