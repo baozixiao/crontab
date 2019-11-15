@@ -36,6 +36,7 @@ func handleJobSave(resp http.ResponseWriter, req *http.Request) {
 	}
 	// 2. 取表单中的job字段
 	postJob = req.PostForm.Get("job") // 表单 key=job / value为json {"name":"job15","command":"echo hello1","cronExpr":"* * * * *"}
+	fmt.Println(postJob)
 	// 3. 反序列化job
 	job = &common.Job{}
 	if err = json.Unmarshal([]byte(postJob), job); err != nil {
