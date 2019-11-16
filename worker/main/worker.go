@@ -22,6 +22,10 @@ func main() {
 	if err = worker.InitConfig("worker/main/worker.json"); err != nil {
 		goto ERR
 	}
+	// 启动执行器
+	if err = worker.InitExecutor(); err != nil {
+		goto ERR
+	}
 	// 启动调度器(先调度器，再管理器)
 	if err = worker.InitScheduler(); err != nil {
 		goto ERR
