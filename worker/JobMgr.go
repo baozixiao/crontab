@@ -16,7 +16,7 @@ type JobMgr struct {
 	watcher clientv3.Watcher
 }
 
-// 监听任务变化
+// 启动监听任务 + 监听任务变化
 func (jobMgr *JobMgr) watchJobs() (err error) {
 	var (
 		getResp            *clientv3.GetResponse
@@ -38,9 +38,10 @@ func (jobMgr *JobMgr) watchJobs() (err error) {
 		// 反序列化json得到job
 		if job, err = common.UnpackJob(kvpair.Value); err == nil {
 			jobEvent = common.BuildJobEvent(common.JOB_EVENT_SAVE, job)
-			// TODO: 推送EVENT事件给调度器scheduler
-			// G_Scheduler.PushJobEvent(jobEvent)
+			// 推送任务
+			G_scheduler.PushJobEvent(jobEvent)
 		}
+		//fmt.Println("JObMgr: ", job.Name)
 	}
 
 	// 2.从该revision向后监听变化事件，任务发生变化通知执行
@@ -48,11 +49,11 @@ func (jobMgr *JobMgr) watchJobs() (err error) {
 		// 从GET时刻的后续版本开始监听变化
 		watchStartRevision = getResp.Header.Revision + 1
 		// 监听/cron/jobs/目录的后续变化
-		watchChan = jobMgr.watcher.Watch(context.TODO(), common.JOB_SAVE_DIR, clientv3.WithRev(watchStartRevision))
+		watchChan = jobMgr.watcher.Watch(context.TODO(), common.JOB_SAVE_DIR, clientv3.WithRev(watchStartRevision), clientv3.WithPrefix())
 		// 启动监听，处理监听事件
 		for watchResp = range watchChan {
 			// 每次可能有多个事件
-			for watchEvent = range watchResp.Events {
+			for _, watchEvent = range watchResp.Events { // 第一个是下标
 				switch watchEvent.Type {
 				case mvccpb.PUT: //任务保存事件
 					if job, err = common.UnpackJob(watchEvent.Kv.Value); err != nil {
@@ -68,8 +69,8 @@ func (jobMgr *JobMgr) watchJobs() (err error) {
 					}
 					jobEvent = common.BuildJobEvent(common.JOB_EVENT_DELETE, job)
 				}
-				// TODO: 推送EVENT事件给调度器scheduler
-				// G_Scheduler.PushJobEvent(jobEvent)
+				// 推送任务
+				G_scheduler.PushJobEvent(jobEvent)
 			}
 		}
 	}()

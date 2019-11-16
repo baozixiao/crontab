@@ -19,7 +19,11 @@ func main() {
 	// 初始化线程
 	initEnv()
 	// 加载配置
-	if err = worker.InitConfig("master/main/master.json"); err != nil {
+	if err = worker.InitConfig("worker/main/worker.json"); err != nil {
+		goto ERR
+	}
+	// 启动调度器(先调度器，再管理器)
+	if err = worker.InitScheduler(); err != nil {
 		goto ERR
 	}
 	// 任务管理器
