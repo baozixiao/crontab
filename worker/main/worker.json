@@ -3,5 +3,9 @@
   "apiReadTimeout":5000,
   "apiWriteTimeout":5000,
   "etcdEndPoints":["127.0.0.1:2379"],
-  "etcdDialTimeout": 3000
+  "etcdDialTimeout": 3000,
+  "mongodbUri": "localhost:27017",
+  "mongodbConnectTimeout": 5000,
+  "jobLogBatchSize": 100,
+  "jobLogCommitTimeout": 1000
 }
