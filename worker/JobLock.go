@@ -16,7 +16,7 @@ type JobLock struct {
 	jobName    string             // 任务名称
 	cancelFunc context.CancelFunc // 用于终止自动续租
 	leaseID    clientv3.LeaseID   // 租约id
-	isLocked   bool               // 是否上锁成功
+	isLocked   bool               // 是否上锁成功，每一个job都有一个JobLock对象，所以不存在冲突问题
 }
 
 // 尝试上锁

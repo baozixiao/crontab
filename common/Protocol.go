@@ -1,6 +1,7 @@
 package common
 
 import (
+	"context"
 	"encoding/json"
 	"github.com/gorhill/cronexpr"
 	"strings"
@@ -23,9 +24,11 @@ type JobSchedulePlan struct {
 
 // 任务执行状态
 type JobExecuteInfo struct {
-	Job      *Job      // 任务信息
-	PlanTime time.Time // 理论上的调度时间
-	RealTime time.Time // 实际的调度时间
+	Job        *Job               // 任务信息
+	PlanTime   time.Time          // 理论上的调度时间
+	RealTime   time.Time          // 实际的调度时间
+	CancelCtx  context.Context    // 用于取消任务command的context
+	CancelFunc context.CancelFunc // 用于取消任务command的方法
 }
 
 // HTTP接口应答
@@ -81,6 +84,11 @@ func ExtractJobName(jobKey string) string {
 	return strings.TrimPrefix(jobKey, JOB_SAVE_DIR)
 }
 
+// 从etcd的key中提取任务名称  /cron/killer/job10 -> job10
+func ExtractKillerName(killerKey string) string {
+	return strings.TrimPrefix(killerKey, JOB_KILLER_DIR)
+}
+
 // 任务变化事件有两种，1 更新任务 2 删除任务
 func BuildJobEvent(eventType int, job *Job) (jobEvent *JobEvent) {
 	return &JobEvent{
@@ -113,5 +121,6 @@ func BuildJobExecuteInfo(jobSchedulePlan *JobSchedulePlan) (jobExecuteInfo *JobE
 		PlanTime: jobSchedulePlan.NextTime, // 计划调度时间
 		RealTime: time.Now(),               // 真实调度时间
 	}
+	jobExecuteInfo.CancelCtx, jobExecuteInfo.CancelFunc = context.WithCancel(context.TODO())
 	return
 }

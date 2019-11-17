@@ -27,6 +27,8 @@ func (scheduler *Scheduler) handleJobEvent(jobEvent *common.JobEvent) {
 		jobSchedulerPlan *common.JobSchedulePlan
 		err              error
 		jobExisted       bool
+		jobExecuteInfo   *common.JobExecuteInfo
+		jobExecuting     bool
 	)
 	switch jobEvent.EventType {
 	case common.JOB_EVENT_SAVE:
@@ -38,6 +40,12 @@ func (scheduler *Scheduler) handleJobEvent(jobEvent *common.JobEvent) {
 		// 如果计划表中有任务，就将任务删除
 		if jobSchedulerPlan, jobExisted = scheduler.jobPlanTable[jobEvent.Job.Name]; jobExisted {
 			delete(scheduler.jobPlanTable, jobEvent.Job.Name)
+		}
+	case common.JOB_EVENT_KILL: // 强杀任务事件
+		// 取消掉command执行
+		// 判断任务是否在执行
+		if jobExecuteInfo, jobExecuting = scheduler.jobExecutingTable[jobEvent.Job.Name]; jobExecuting {
+			jobExecuteInfo.CancelFunc() // 取消任务执行，触发command杀死子进程，任务得到退出
 		}
 	}
 }

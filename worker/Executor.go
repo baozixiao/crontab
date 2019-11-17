@@ -2,7 +2,7 @@ package worker
 
 import (
 	"../common"
-	"context"
+	"math/rand"
 	"os/exec"
 	"time"
 )
@@ -36,6 +36,9 @@ func (executor *Executor) ExecuteJob(info *common.JobExecuteInfo) {
 
 		// 如果抢到了锁，就执行shell
 		// 如果没抢到锁，就跳过执行
+
+		// 随机睡眠0-1秒，可以保证不是总被一个worker强到锁
+		time.Sleep(time.Duration(rand.Intn(1000)) * time.Millisecond)
 		err = jobLock.TryLock()
 		defer jobLock.UnLock() // 执行完毕之后，将锁释放，不再续约
 		if err != nil {        // 上锁失败
@@ -45,7 +48,7 @@ func (executor *Executor) ExecuteJob(info *common.JobExecuteInfo) {
 			// 重置任务启动时间
 			result.StartTime = time.Now()
 			// 执行shell命令
-			cmd = exec.CommandContext(context.TODO(), "/bin/bash", "-c", info.Job.Command)
+			cmd = exec.CommandContext(info.CancelCtx, "/bin/bash", "-c", info.Job.Command)
 			//time.Sleep(10*time.Second)
 			// 执行并捕获输出
 			output, err = cmd.CombinedOutput()
