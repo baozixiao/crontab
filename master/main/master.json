@@ -4,5 +4,7 @@
   "apiWriteTimeout":5000,
   "etcdEndPoints":["127.0.0.1:2379"],
   "etcdDialTimeout": 3000,
-  "webroot": "master/main/webroot"
+  "webroot": "master/main/webroot",
+  "mongodbUri": "localhost:27017",
+  "mongodbConnectTimeout": 5000
 }

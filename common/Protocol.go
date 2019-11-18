@@ -55,19 +55,29 @@ type JobExecuteResult struct {
 
 // 任务执行日志
 type JobLog struct {
-	JobName      string `bson:"jobName"`
-	Command      string `bson:"command"`
-	Err          string `bson:"err"`
-	Output       string `bson:"output"`
-	PlanTime     int64  `bson:"planTime"`     // 计划开始时间
-	ScheduleTime int64  `bson:"scheduleTime"` // 实际调度时间
-	StartTime    int64  `bson:"startTime"`    // 任务执行开始时间
-	EndTime      int64  `bson:"endTime"`      // 任务执行结束时间
+	JobName      string `bson:"jobName" json:"jobName"`
+	Command      string `bson:"command" json:"command"`
+	Err          string `bson:"err" json:"err"`
+	Output       string `bson:"output" json:"output"`
+	PlanTime     int64  `bson:"planTime" json:"planTime"`         // 计划开始时间
+	ScheduleTime int64  `bson:"scheduleTime" json:"scheduleTime"` // 实际调度时间
+	StartTime    int64  `bson:"startTime" json:"startTime"`       // 任务执行开始时间
+	EndTime      int64  `bson:"endTime" json:"endTime"`           // 任务执行结束时间
 }
 
 // 日志批次
 type LogBatch struct {
 	Logs []interface{} // 多条日志
+}
+
+// 任务日志过滤条件
+type JobLogFilter struct {
+	JobName string `bson:"jobName"`
+}
+
+// 任务日志排序规则
+type SortLogByStartTime struct {
+	SortOrder int `bson:"startTime"` //按照startTime排序，-1
 }
 
 // 应答方法

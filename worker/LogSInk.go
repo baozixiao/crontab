@@ -55,7 +55,7 @@ func (logSink *LogSink) writeLoop() {
 				logSink.saveLogs(logBatch)
 				// 清空logBatch
 				logBatch = nil
-				// 取消定时器
+				// 取消定时器 （感觉应该放到最前边！！！！！！！）
 				commitTimer.Stop()
 			}
 		case timeoutBatch = <-logSink.autoCommitChan: // 过期的批次
