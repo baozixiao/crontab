@@ -179,6 +179,28 @@ ERR:
 	}
 }
 
+// 服务发现模块，返回所有节点
+func handleWorkerList(resp http.ResponseWriter, req *http.Request) {
+	var (
+		workerArr []string
+		err       error
+		bytes     []byte
+	)
+	if workerArr, err = G_workerMgr.ListWorkers(); err != nil {
+		goto ERR
+	}
+	// 正常应答
+	if bytes, err = common.BuildResponse(0, "success", workerArr); err == nil {
+		resp.Write(bytes)
+	}
+	return
+ERR:
+	fmt.Println(err)
+	if bytes, err = common.BuildResponse(-1, err.Error(), nil); err == nil {
+		resp.Write(bytes)
+	}
+}
+
 // 初始化服务
 func InitApiServer(err error) error {
 	var (
@@ -195,6 +217,7 @@ func InitApiServer(err error) error {
 	mux.HandleFunc("/job/list", handleJobList)
 	mux.HandleFunc("/job/kill", handleJobKill)
 	mux.HandleFunc("/job/log", handleJobLog) // 日志查询
+	mux.HandleFunc("/worker/list", handleWorkerList)
 
 	staticDir = http.Dir(G_config.Webroot) // 静态文件目录  相对地址，相对于当前项目来说的！！！！
 	staticHandler = http.FileServer(staticDir)

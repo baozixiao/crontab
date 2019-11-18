@@ -22,6 +22,10 @@ func main() {
 	if err = worker.InitConfig("worker/main/worker.json"); err != nil {
 		goto ERR
 	}
+	// 服务注册
+	if err = worker.InitRegister(); err != nil {
+		goto ERR
+	}
 	// 启动日志协程
 	if err = worker.InitLogSink(); err != nil {
 		goto ERR

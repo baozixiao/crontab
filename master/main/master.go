@@ -22,6 +22,10 @@ func main() {
 	if err = master.InitConfig("master/main/master.json"); err != nil {
 		goto ERR
 	}
+	// 服务发现
+	if err = master.InitWorkerMgr(); err != nil {
+		goto ERR
+	}
 	// 日志管理器
 	if err = master.InitLogMgr(); err != nil {
 		goto ERR
